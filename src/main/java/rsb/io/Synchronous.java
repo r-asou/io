@@ -1,6 +1,7 @@
 package rsb.io;
 
 import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
@@ -8,7 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-@Log4j2
+@Slf4j
 class Synchronous implements Reader {
 
 	@Override

@@ -1,6 +1,6 @@
 package rsb.io;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
@@ -8,14 +8,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-@Log4j2
+@Slf4j
 class Asynchronous implements Reader, CompletionHandler<Integer, ByteBuffer> {
 
 	private final ExecutorService executorService = Executors.newFixedThreadPool(10);
@@ -33,10 +32,10 @@ class Asynchronous implements Reader, CompletionHandler<Integer, ByteBuffer> {
 	public void read(File file, Consumer<Bytes> c, Runnable finished) throws IOException {
 		this.consumer = c;
 		this.finished = finished;
-		Path path = file.toPath(); // <1>
-		this.fileChannel = AsynchronousFileChannel.open(path,
-				Collections.singleton(StandardOpenOption.READ), this.executorService); // <2>
-		ByteBuffer buffer = ByteBuffer.allocate(FileCopyUtils.BUFFER_SIZE);
+		var path = file.toPath(); // <1>
+		this.fileChannel = AsynchronousFileChannel.open(path, Collections.singleton(StandardOpenOption.READ),
+				this.executorService); // <2>
+		var buffer = ByteBuffer.allocate(FileCopyUtils.BUFFER_SIZE);
 		this.fileChannel.read(buffer, position, buffer, this); // <3>
 		while (this.bytesRead > 0) {
 			this.position = this.position + this.bytesRead;
@@ -56,7 +55,7 @@ class Asynchronous implements Reader, CompletionHandler<Integer, ByteBuffer> {
 
 		buffer.flip();
 
-		byte[] data = new byte[buffer.limit()];
+		var data = new byte[buffer.limit()];
 		buffer.get(data);
 
 		// <5>
@@ -70,7 +69,7 @@ class Asynchronous implements Reader, CompletionHandler<Integer, ByteBuffer> {
 
 	@Override
 	public void failed(Throwable exc, ByteBuffer attachment) {
-		log.error(exc);
+		log.error("something has gone wrong", exc);
 	}
 
 }

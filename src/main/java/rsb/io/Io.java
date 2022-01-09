@@ -10,7 +10,7 @@ class Io {
 
 	public void synchronousRead(File source, Consumer<Bytes> onBytes, Runnable whenDone) {
 		try {
-			Synchronous synchronous = new Synchronous();
+			var synchronous = new Synchronous();
 			synchronous.read(source, onBytes, whenDone);
 		}
 		catch (IOException e) {
@@ -18,10 +18,9 @@ class Io {
 		}
 	}
 
-	public void asynchronousRead(File source, Consumer<Bytes> onBytes,
-			Runnable whenDone) {
+	public void asynchronousRead(File source, Consumer<Bytes> onBytes, Runnable whenDone) {
 		try {
-			Asynchronous asynchronous = new Asynchronous();
+			var asynchronous = new Asynchronous();
 			asynchronous.read(source, onBytes, whenDone);
 		}
 		catch (Exception ex) {
