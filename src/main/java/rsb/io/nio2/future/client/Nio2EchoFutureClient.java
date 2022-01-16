@@ -19,28 +19,29 @@ import java.util.concurrent.ExecutionException;
 public class Nio2EchoFutureClient {
 
     public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-        var stdIn = new BufferedReader(new InputStreamReader(System.in));
-        var message = (String) null;
-        while ((message = stdIn.readLine()) != null) {
-            var socketChannel = AsynchronousSocketChannel.open();
-            socketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 1024);
-            socketChannel.setOption(StandardSocketOptions.SO_SNDBUF, 1024);
-            socketChannel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
-            socketChannel.connect(new InetSocketAddress("localhost", 7000)).get();
-            var outputBuffer = ByteBuffer.wrap(message.getBytes());
-            socketChannel.write(outputBuffer).get();
-            log.info("Echo client sent: {}", message);
-            var inputBuffer = ByteBuffer.allocate(1024);
-            while (socketChannel.read(inputBuffer).get() != -1) {
-                inputBuffer.flip();
-                if (inputBuffer.hasRemaining()) {
-                    inputBuffer.compact();
-                } else {
-                    inputBuffer.clear();
+        try (var stdIn = new BufferedReader(new InputStreamReader(System.in))) {
+            var message = (String) null;
+            while ((message = stdIn.readLine()) != null) {
+                try (var socketChannel = AsynchronousSocketChannel.open()) {
+                    socketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 1024);
+                    socketChannel.setOption(StandardSocketOptions.SO_SNDBUF, 1024);
+                    socketChannel.setOption(StandardSocketOptions.SO_KEEPALIVE, true);
+                    socketChannel.connect(new InetSocketAddress("localhost", 7000)).get();
+                    var outputBuffer = ByteBuffer.wrap(message.getBytes());
+                    socketChannel.write(outputBuffer).get();
+                    log.info("Echo client sent: {}", message);
+                    var inputBuffer = ByteBuffer.allocate(1024);
+                    while (socketChannel.read(inputBuffer).get() != -1) {
+                        inputBuffer.flip();
+                        if (inputBuffer.hasRemaining()) {
+                            inputBuffer.compact();
+                        }//
+                        else {
+                            inputBuffer.clear();
+                        }
+                    }
                 }
             }
-
-            socketChannel.close();
         }
     }
 }

@@ -11,7 +11,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 /**
  * @author Aliaksandr Liakh
@@ -24,31 +23,26 @@ public class NioSelectorEchoServer {
     public static void main(String[] args) throws IOException {
         ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
-
         serverSocketChannel.bind(new InetSocketAddress("localhost", 7000));
         log.info("Echo server started: {}", serverSocketChannel);
-
-        Selector selector = Selector.open();
+        var selector = Selector.open();
         serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-
         while (active) {
-            int selected = selector.select(); // blocking
+            var selected = selector.select(); // blocking
             log.info("selected: {} key(s)", selected);
-
-            Iterator<SelectionKey> keysIterator = selector.selectedKeys().iterator();
+            var keysIterator = selector.selectedKeys().iterator();
             while (keysIterator.hasNext()) {
-                SelectionKey key = keysIterator.next();
-
-                if (key.isAcceptable()) {
-                    accept(selector, key);
+                var selectionKey = keysIterator.next();
+                if (selectionKey.isAcceptable()) {
+                    accept(selector, selectionKey);
                 }
-                if (key.isReadable()) {
+                if (selectionKey.isReadable()) {
                     keysIterator.remove();
-                    read(selector, key);
+                    read(selector, selectionKey);
                 }
-                if (key.isWritable()) {
+                if (selectionKey.isWritable()) {
                     keysIterator.remove();
-                    write(key);
+                    write(selectionKey);
                 }
             }
         }
@@ -69,9 +63,8 @@ public class NioSelectorEchoServer {
     }
 
     private static void read(Selector selector, SelectionKey key) throws IOException {
-        SocketChannel socketChannel = (SocketChannel) key.channel();
-
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        var socketChannel = (SocketChannel) key.channel();
+        var buffer = ByteBuffer.allocate(1024);
         int read = socketChannel.read(buffer); // can be non-blocking
         log.info("Echo server read: {} byte(s)", read);
 
@@ -83,14 +76,13 @@ public class NioSelectorEchoServer {
         if (message.trim().equals("bye")) {
             active = false;
         }
-
         buffer.flip();
         socketChannel.register(selector, SelectionKey.OP_WRITE, buffer);
     }
 
     private static void write(SelectionKey key) throws IOException {
-        SocketChannel socketChannel = (SocketChannel) key.channel();
-        ByteBuffer buffer = (ByteBuffer) key.attachment();
+        var socketChannel = (SocketChannel) key.channel();
+        var buffer = (ByteBuffer) key.attachment();
         socketChannel.write(buffer); // can be non-blocking
         socketChannel.close();
 

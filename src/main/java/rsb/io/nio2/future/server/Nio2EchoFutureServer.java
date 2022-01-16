@@ -16,34 +16,29 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class Nio2EchoFutureServer {
 
-
     public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
-        var active = true;
-        var serverSocketChannel = AsynchronousServerSocketChannel.open();
-        serverSocketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 1024);
-        serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-        serverSocketChannel.bind(new InetSocketAddress("localhost", 7000));
-        log.info("Echo server started: {}", serverSocketChannel);
-        while (active) {
-            var socketChannelFuture = serverSocketChannel.accept();
-            var socketChannel = socketChannelFuture.get();
-            log.info("Connection: {}", socketChannel);
-            var buffer = ByteBuffer.allocate(1024);
-            while (socketChannel.read(buffer).get() != -1) {
-                buffer.flip();
-                socketChannel.write(buffer).get();
-                if (buffer.hasRemaining()) {
-                    buffer.compact();
-                } else {
-                    buffer.clear();
+        try (var serverSocketChannel = AsynchronousServerSocketChannel.open()) {
+            serverSocketChannel.setOption(StandardSocketOptions.SO_RCVBUF, 1024);
+            serverSocketChannel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+            serverSocketChannel.bind(new InetSocketAddress("localhost", 7000));
+            log.info("Echo server started: {}", serverSocketChannel);
+            while (true) {
+                var socketChannelFuture = serverSocketChannel.accept();
+                try (var socketChannel = socketChannelFuture.get()) {
+                    log.info("Connection: {}", socketChannel);
+                    var buffer = ByteBuffer.allocate(1024);
+                    while (socketChannel.read(buffer).get() != -1) {
+                        buffer.flip();
+                        socketChannel.write(buffer).get();
+                        if (buffer.hasRemaining()) {
+                            buffer.compact();
+                        } else {
+                            buffer.clear();
+                        }
+                    }
                 }
+                log.info("Connection finished");
             }
-
-            socketChannel.close();
-            log.info("Connection finished");
         }
-
-        serverSocketChannel.close();
-        log.info("Echo server finished");
     }
 }
