@@ -64,10 +64,4 @@ public class NioEchoServer {
         return byteBuffer;
     }
 
-    private static void attemptWrite(SocketChannel channel, Selector selector, ByteBuffer toWrite) throws IOException {
-        if (channel.write(toWrite) == 0) {
-            channel.register(selector, SelectionKey.OP_WRITE, toWrite);
-        }
-    }
-
 }
