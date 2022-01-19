@@ -2,7 +2,6 @@ package rsb.io.nio;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -44,17 +43,15 @@ public class NioEchoServer {
 					client.read(capture);
 					var incoming = new String(capture.array()).trim().toUpperCase(Locale.ROOT);
 					var reply = buildBuffer(incoming);
-					client.register(selector, SelectionKey.OP_WRITE, reply); // ask to be
-																				// scheduled
-																				// to do a
-																				// write
-																				// with
-																				// reply
+					client.register(selector, SelectionKey.OP_WRITE, reply);
+					/* ask to be scheduled to do a write with the reply */
 				} //
 				else if (key.isWritable()) {
 					var client = (SocketChannel) key.channel();
 					var buffer = (ByteBuffer) key.attachment();
-					client.write(buffer);
+					while (buffer.hasRemaining())
+						if (client.write(buffer) == 0)
+							client.register(selector, SelectionKey.OP_WRITE, buffer);
 				}
 				keyIterator.remove();
 			}
