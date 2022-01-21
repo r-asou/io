@@ -1,4 +1,4 @@
-package rsb.io.nio.service;
+package rsb.io.nio;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -11,8 +11,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +45,7 @@ record SocketAcceptor(int port, Queue<Socket> sockets) implements Runnable {
 	@SneakyThrows
 	public void run() {
 		try (var ssc = ServerSocketChannel.open()) {
-			ssc.bind(new InetSocketAddress(port()));
+			ssc.bind(new InetSocketAddress(port));
 			while (true) {
 				var socketChannel = ssc.accept();
 				sockets.add(new Socket(socketChannel));
@@ -63,7 +65,6 @@ record SocketProcessor(Queue<Socket> sockets, Selector readSelector, Selector wr
 		while (true) {
 			accept();
 			read();
-			write();
 			TimeUnit.MILLISECONDS.sleep(100);
 		}
 	}
@@ -73,8 +74,9 @@ record SocketProcessor(Queue<Socket> sockets, Selector readSelector, Selector wr
 		while (newSocket != null) {
 			log.info("got a new socket...");
 			newSocket.socketId(this.socketId.incrementAndGet());
-			newSocket.socketChannel().configureBlocking(false);
-			newSocket.socketChannel().register(this.readSelector, SelectionKey.OP_READ, newSocket);
+			var socketChannel = newSocket.socketChannel();
+			socketChannel.configureBlocking(false);
+			socketChannel.register(this.readSelector, SelectionKey.OP_READ, newSocket);
 			newSocket = this.sockets.poll();
 		}
 	}
@@ -104,11 +106,13 @@ record SocketProcessor(Queue<Socket> sockets, Selector readSelector, Selector wr
 		var read = socket.read(bb);
 		var string = new String(bb.array()).trim();
 		if (bb.remaining() == 0) {
+			log.info("there are zero remaining bytes to read");
 			bb.clear();
 		}
 		bb.flip();
 		log.info(String.format("read " + read + " byte(s): [%s]", string));
-
+		bb.put(string.toUpperCase(Locale.ROOT).getBytes(StandardCharsets.UTF_8));
+		socket.write(bb);
 		if (socket.eos()) {
 			log.info("socket closed: " + socket.socketId());
 			key.attach(null);
@@ -117,9 +121,6 @@ record SocketProcessor(Queue<Socket> sockets, Selector readSelector, Selector wr
 		}
 	}
 
-	private void write() throws Exception {
-
-	}
 }
 
 @Slf4j
