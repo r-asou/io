@@ -8,7 +8,6 @@ import java.io.BufferedReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.function.Supplier;
 
@@ -16,43 +15,44 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class NioEchoClient {
 
-	private final Supplier<BufferedReader> bufferedReaderSupplier;
+    private final Supplier<BufferedReader> bufferedReaderSupplier;
 
-	@SneakyThrows
-	public void start(int port) {
-		log.info("started @ " + Instant.now().toString());
-		try (var stdIn = bufferedReaderSupplier.get()) {
-			var message = (String) null;
-			while ((message = stdIn.readLine()) != null) {
-				message = message.strip().trim();
-				log.info("going to send [" + message + "]");
-				var address = new InetSocketAddress(port);
-				try (var socketChannel = SocketChannel.open(address)) {
-					log.info("echo client started: {}", socketChannel);
-					var buffer = ByteBuffer.wrap(message.getBytes());
-					var written = socketChannel.write(buffer);
-					var length = message.getBytes().length;
-					if (written == length)
-						log.info("wrote as many bytes as there are to write");
-					log.info("echo client sent: {}", message);
-					var totalRead = 0;
-					while (totalRead < length) {
-						buffer.clear();
-						var read = socketChannel.read(buffer);
-						log.info("echo client read: {} byte(s)", read);
-						if (read <= 0) {
-							log.info("read < 0: " + read);
-							break;
-						}
-						totalRead += read;
-						buffer.flip();
-						log.info("echo client received: {}", StandardCharsets.UTF_8.newDecoder().decode(buffer));
-					}
-				}
+    @SneakyThrows
+    public void start(int port) {
+        log.info("started @ " + Instant.now().toString());
+        try (var stdIn = bufferedReaderSupplier.get()) {
+            var message = (String) null;
+            while ((message = stdIn.readLine()) != null) {
+                message = message.strip().trim();
+                log.info("going to send [" + message + "]");
+                var address = new InetSocketAddress(port);
+                try (var socketChannel = SocketChannel.open(address)) {
+                    log.info("echo client started: {}", socketChannel);
+                    var buffer = ByteBuffer.wrap(message.getBytes());
+                    var written = socketChannel.write(buffer);
+                    var length = message.getBytes().length;
+                    if (written == length)
+                        log.info("wrote as many bytes as there are to write");
+                    log.info("echo client sent: {}", message);
+                    var totalRead = 0;
+                    while (totalRead < length) {
+                        buffer.clear();
+                        buffer.rewind();
+                        var read = socketChannel.read(buffer);
+                        var txt =  new String(buffer.array());
+                        log.info("echo client received {} bytes and the following text \"{}\" ", read, txt);
+                        if (read <= 0) {
+                            log.info("read < 0: " + read);
+                            break;
+                        }
+                        totalRead += read;
+                        buffer.flip();
+                    }
+                }
 
-			}
-			log.info("echo client disconnected");
-		}
-	}
+            }
+            log.info("echo client disconnected");
+        }
+    }
 
 }
