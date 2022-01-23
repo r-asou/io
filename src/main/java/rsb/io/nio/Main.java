@@ -2,11 +2,10 @@ package rsb.io.nio;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.FileCopyUtils;
+import org.springframework.util.Assert;
 import rsb.io.io.IoEchoClient;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -14,6 +13,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +28,8 @@ public class Main {
             ByteArrayOutputStream bytes) {
     }
 
+    record WriteAttachment(SelectionKey key, ByteBuffer buffer) {
+    }
 
     @SneakyThrows
     static void server(int port) {
@@ -49,25 +51,32 @@ public class Main {
                         doAccept(selector, socket, key);
                     } //
                     else if (key.isReadable()) {
-                        key.interestOps(key.interestOps() & (~SelectionKey.OP_READ));
-                        doRead(key);
-                    }
+                        log.info("read");
+                        doRead(selector, key);
+                    } //
+                    else if (key.isWritable()) {
+//                        log.info("write");
+                        doWrite(selector, key);
+                    } //
                 }
             }
         }
     }
 
-    private static void doAccept(Selector selector, ServerSocketChannel socket, SelectionKey key) throws IOException {
-        var client = socket.accept();
-        client.configureBlocking(false);
-        var readAttachment = new ReadAttachment(key, ByteBuffer.allocate(1024 / 2), new ByteArrayOutputStream());
-        client.register(selector, SelectionKey.OP_READ, readAttachment);
-        log.info("connection accepted: " + client.getLocalAddress());
+    private static void doWrite(Selector selector, SelectionKey key) throws IOException {
+        Assert.isTrue(selector.isOpen(), "the channels not open");
+        var attachment = (WriteAttachment) key.attachment();
+        var bb = attachment.buffer();
+        var channel = (SocketChannel) key.channel();
+        while (bb.hasRemaining()) {
+            var written = channel.write(bb);
+            log.info("remaining=" + (written > 0) + "? wrote=" + written);
+        }
     }
 
 
-    @SneakyThrows
-    static void doRead(SelectionKey key) {
+    static void doRead(Selector selector, SelectionKey key) {
+
         try {
             var attachment = (ReadAttachment) key.attachment();
             var buffer = attachment.buffer();
@@ -80,19 +89,36 @@ public class Main {
                 byteArrayOutputStream.write(buffer.array(), 0, size);
                 buffer.clear();
             }
-            if (size == -1) {
-                FileCopyUtils.copy(byteArrayOutputStream.toByteArray(), new File(System.getenv("HOME") + "/Desktop/out"));
+            if (size == 0) { // can't read anymore
+                log.info("there is no more data to read");
+                var string = byteArrayOutputStream.toString().toUpperCase(Locale.ROOT);
+                var bytesArray = string.getBytes();
+                var bb = ByteBuffer.wrap(bytesArray);
+                log.info("the byte buffer length is " + bytesArray.length);
+                channel.register(selector, SelectionKey.OP_WRITE, new WriteAttachment(key, bb));
+                return;
+            }
+            if (size == -1) { // means disconnect
+                log.info("disconnected && closed baos");
                 byteArrayOutputStream.close();
                 return;
             }
-            key.interestOps(key.interestOps() | SelectionKey.OP_READ);
-            key.selector().wakeup();
+            log.info("registering for more reads..");
+            channel.register(selector, SelectionKey.OP_READ, attachment);
 
         } //
         catch (Throwable e) {
             log.error("oops!", e);
         }
 
+    }
+
+    private static void doAccept(Selector selector, ServerSocketChannel socket, SelectionKey key) throws IOException {
+        var client = socket.accept();
+        client.configureBlocking(false);
+        var readAttachment = new ReadAttachment(key, ByteBuffer.allocate(1024 / 2), new ByteArrayOutputStream());
+        client.register(selector, SelectionKey.OP_READ, readAttachment);
+        log.info("connection accepted: " + client.getLocalAddress());
     }
 
 
