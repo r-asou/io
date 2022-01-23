@@ -1,4 +1,4 @@
-package rsb.io;
+package rsb.io.files;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.util.FileCopyUtils;
+import rsb.io.files.Bytes;
+import rsb.io.files.Io;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,7 +31,7 @@ public class IoTest {
 	private final Io io = new Io();
 
 	private final File file = Files//
-			.createTempFile("io-test-data", ".txt")//
+			.createTempFile("io-content-data", ".txt")//
 			.toFile();
 
 	private final CountDownLatch latch = new CountDownLatch(1);

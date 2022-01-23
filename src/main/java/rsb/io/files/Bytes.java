@@ -1,4 +1,4 @@
-package rsb.io;
+package rsb.io.files;
 
 record Bytes(byte[] bytes, int length) {
 

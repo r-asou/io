@@ -1,4 +1,4 @@
-package rsb.io;
+package rsb.io.files;
 
 import org.springframework.util.ReflectionUtils;
 
