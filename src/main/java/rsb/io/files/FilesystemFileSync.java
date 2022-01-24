@@ -3,7 +3,8 @@ package rsb.io.files;
 import java.io.File;
 import java.util.function.Consumer;
 
-public interface FilesystemFileSync {
+interface FilesystemFileSync {
 
-    void start(File source, Consumer<byte[]> handler)  ;
+	void start(File source, Consumer<byte[]> handler);
+
 }

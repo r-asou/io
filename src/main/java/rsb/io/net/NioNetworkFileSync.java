@@ -1,8 +1,6 @@
-package rsb.io.net.nio;
+package rsb.io.net;
 
 import lombok.SneakyThrows;
-import rsb.io.net.NetworkFileSync;
-import rsb.io.net.FileSystemPersistingByteConsumer;
 
 import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
@@ -18,16 +16,16 @@ import java.util.function.Consumer;
 /**
  * Reads data in a non-blocking and asynchronous fashion
  */
-public class Server implements NetworkFileSync {
+class NioNetworkFileSync implements NetworkFileSync {
 
-	public static void main(String[] args) throws Exception {
-		var port = 8888;
-		var server = new Server();
-		server.start(port, new FileSystemPersistingByteConsumer("nio"));
+	public static void main(String[] args) {
+		var nfs = new NioNetworkFileSync();
+		nfs.start(8888, new FileSystemPersistingByteConsumer("nio"));
 	}
 
 	@Override
-	public void start(int port, Consumer<byte[]> bytesHandler) throws Exception {
+	@SneakyThrows
+	public void start(int port, Consumer<byte[]> bytesHandler) {
 
 		var serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);

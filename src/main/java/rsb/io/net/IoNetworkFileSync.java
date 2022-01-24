@@ -1,7 +1,6 @@
-package rsb.io.net.io;
+package rsb.io.net;
 
-import rsb.io.net.NetworkFileSync;
-import rsb.io.net.FileSystemPersistingByteConsumer;
+import lombok.SneakyThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.net.ServerSocket;
@@ -10,16 +9,16 @@ import java.util.function.Consumer;
 /**
  * Reads data in a synchronous and blocking fashion
  */
-public class Server implements NetworkFileSync {
+class IoNetworkFileSync implements NetworkFileSync {
 
-	public static void main(String[] args) throws Exception {
-		var port = 8888;
-		var server = new Server();
-		server.start(port, new FileSystemPersistingByteConsumer("io"));
+	public static void main(String[] args) {
+		var nfs = new IoNetworkFileSync();
+		nfs.start(8888, new FileSystemPersistingByteConsumer("io"));
 	}
 
 	@Override
-	public void start(int port, Consumer<byte[]> bytesHandler) throws Exception {
+	@SneakyThrows
+	public void start(int port, Consumer<byte[]> consumer) {
 		try (var ss = new ServerSocket(port)) {
 			while (true) {
 				try (var socket = ss.accept();
@@ -29,7 +28,7 @@ public class Server implements NetworkFileSync {
 					var read = -1;
 					while ((read = in.read(bytes)) != -1)
 						out.write(bytes, 0, read);
-					bytesHandler.accept(out.toByteArray());
+					consumer.accept(out.toByteArray());
 				}
 
 			}

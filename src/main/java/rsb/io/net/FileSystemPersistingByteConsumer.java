@@ -1,6 +1,5 @@
 package rsb.io.net;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.util.Assert;
 import org.springframework.util.FileCopyUtils;
@@ -9,10 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.function.Consumer;
 
-@RequiredArgsConstructor
-public class FileSystemPersistingByteConsumer implements Consumer<byte[]> {
-
-	private final String prefix;
+record FileSystemPersistingByteConsumer(String prefix) implements Consumer<byte[]> {
 
 	@Override
 	@SneakyThrows
