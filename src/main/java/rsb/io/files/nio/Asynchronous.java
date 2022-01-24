@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 @Slf4j
 class Asynchronous {
 
-	record ReadAttachment(ByteBuffer buffer, long position) {
+	record ReadAttachment(ByteBuffer buffer, ByteArrayOutputStream byteArrayOutputStream, long position) {
 	}
 
 	@SneakyThrows
@@ -25,34 +25,34 @@ class Asynchronous {
 		var executorService = Executors.newSingleThreadExecutor();
 		var fileChannel = AsynchronousFileChannel.open(file.toPath(), Collections.singleton(StandardOpenOption.READ),
 				executorService);
-		var byteBuffer = ByteBuffer.allocate(1024);
-		var byteArrayOutputStream = new ByteArrayOutputStream();
 		var completionHandler = new CompletionHandler<Integer, ReadAttachment>() {
 
 			@Override
 			@SneakyThrows
 			public void completed(Integer result, ReadAttachment attachment) {
-				log.info("result: " + result);
 				if (!result.equals(-1)) {
 					var buffer = attachment.buffer();
 					buffer.flip();
 					var storage = new byte[buffer.limit()];
 					buffer.get(storage);
-					byteArrayOutputStream.write(storage);
+					attachment.byteArrayOutputStream().write(storage);
 					attachment.buffer().clear();
-					var ra = new ReadAttachment(attachment.buffer(),
-							attachment.position() + attachment.buffer().limit());
+					var ra = new ReadAttachment(attachment.buffer(), //
+							attachment.byteArrayOutputStream(), //
+							attachment.position() + attachment.buffer().limit() //
+					);
 					fileChannel.read(attachment.buffer(), ra.position(), ra, this);
 				} //
 				else { // it's -1
-					var all = byteArrayOutputStream.toByteArray();
+					var all = attachment.byteArrayOutputStream().toByteArray();
 					try {
-						byteArrayOutputStream.close();
+						attachment.byteArrayOutputStream().close();
 					} //
 					catch (Exception e) {
 						log.error("oops!", e);
 					}
 					consumer.accept(all);
+					log.info("file read stop");
 				}
 			}
 
@@ -61,8 +61,8 @@ class Asynchronous {
 				log.error("something has gone terribly wrong!", throwable);
 			}
 		};
-		var ra = new ReadAttachment(byteBuffer, 0);
-		fileChannel.read(byteBuffer, ra.position(), ra, completionHandler);
+		var attachment = new ReadAttachment(ByteBuffer.allocate(1024), new ByteArrayOutputStream(), 0);
+		fileChannel.read(attachment.buffer(), attachment.position(), attachment, completionHandler);
 
 	}
 
@@ -70,7 +70,6 @@ class Asynchronous {
 		var file = FileUtils.setup();
 		log.info("file read start");
 		read(file, bytes -> log.info("read " + bytes.length + " and the file is " + file.length()));
-		log.info("file read stop");
 	}
 
 }
