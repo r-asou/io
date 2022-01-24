@@ -71,7 +71,6 @@ class Asynchronous {
 		log.info("file read start");
 		read(file, bytes -> log.info("read " + bytes.length + " and the file is " + file.length()));
 		log.info("file read stop");
-
 	}
 
 }
