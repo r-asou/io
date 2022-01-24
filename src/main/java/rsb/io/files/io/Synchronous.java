@@ -10,6 +10,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.function.Consumer;
 
+/**
+ *
+ * This class is synchronous and blocking: it reads data and blocks the client thread. It
+ * is possible to make this code asynchronous, but we would need to explicitly involve
+ * threading somewhere.
+ *
+ * @author Josh Long
+ */
 @Slf4j
 class Synchronous {
 
