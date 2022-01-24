@@ -62,13 +62,11 @@ class NioNetworkFileSync implements NetworkFileSync {
 
 		try (var baos = new ByteArrayOutputStream()) {
 			for (var bb : buffers) {
-				var pos = bb.position();
 				bb.flip();
 				var bytes = new byte[bb.limit()];
 				bb.get(bytes);
 				baos.write(bytes, 0, bb.position());
 			}
-			// baos.flush();
 			var bytes = baos.toByteArray();
 			handler.accept(bytes);
 
