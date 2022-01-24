@@ -1,6 +1,6 @@
 package rsb.io.net.io;
 
-import rsb.io.net.FileSyncService;
+import rsb.io.net.NetworkFileSync;
 import rsb.io.net.FileSystemPersistingByteConsumer;
 
 import java.io.ByteArrayOutputStream;
@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /**
  * Reads data in a synchronous and blocking fashion
  */
-public class Server implements FileSyncService {
+public class Server implements NetworkFileSync {
 
 	public static void main(String[] args) throws Exception {
 		var port = 8888;
