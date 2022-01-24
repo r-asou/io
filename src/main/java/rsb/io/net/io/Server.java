@@ -1,42 +1,33 @@
 package rsb.io.net.io;
 
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Locale;
+import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedInputStream;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Scanner;
+
+@Slf4j
 public class Server {
 
+	public static void main(String[] args) throws Exception {
+		var port = 8888;
+		try (var serverSocket = new ServerSocket(port)) {
+			while (true) {
+				try (var clientSocket = serverSocket.accept();
+						var in = new BufferedInputStream(clientSocket.getInputStream());
+						var out = new PrintWriter(clientSocket.getOutputStream(), true);) {
+					var scanner = new Scanner(in, StandardCharsets.UTF_8);
+					scanner.useLocale(Locale.US);
+					var string = (String) null;
+					while ((string = ScannerUtils.next(scanner)) != null) {
+						out.println(string.toUpperCase(Locale.ROOT));
+					}
+				}
+			}
+		}
+	}
 
-    public static void main(String[] args) throws Exception {
-
-        // create socket
-        int port = 4444;
-        ServerSocket serverSocket = new ServerSocket(port);
-        System.err.println("Started server on port " + port);
-
-        // repeatedly wait for connections, and process
-        while (true) {
-
-            // a "blocking" call which waits until a connection is requested
-            Socket clientSocket = serverSocket.accept();
-            System.err.println("Accepted connection from client");
-
-            // open up IO streams
-            In in = new In(clientSocket);
-            Out out = new Out(clientSocket);
-
-            // waits for data and reads it in until connection dies
-            // readLine() blocks until the server receives a new line from client
-            String s;
-            while ((s = in.readLine()) != null) {
-                out.println(s.toUpperCase(Locale.ROOT));
-            }
-
-            // close IO streams, then socket
-            System.err.println("Closing connection with client");
-            out.close();
-            in.close();
-            clientSocket.close();
-        }
-    }
 }

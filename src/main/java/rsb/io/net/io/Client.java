@@ -2,40 +2,29 @@ package rsb.io.net.io;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedInputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Scanner;
 
 @Slf4j
 public class Client {
 
-    public static void main(String[] args) throws Exception {
-        String screenName = "jlong";
-        String host = "127.0.0.1";
-        int port = 4444;
+	public static void main(String[] args) throws Exception {
+		var host = "127.0.0.1";
+		var port = 8888;
+		try (var socket = new Socket(host, port);
+				var in = new BufferedInputStream(socket.getInputStream());
+				var out = new PrintWriter(socket.getOutputStream())) {
+			var scanner = new Scanner(in, StandardCharsets.UTF_8);
+			scanner.useLocale(Locale.US);
+			out.println("This is a test");
+			out.flush();
+			log.info("next line: " + ScannerUtils.next(scanner));
 
-        // connect to server and open up IO streams
-        Socket socket = new Socket(host, port);
-        In stdin = new In();
-        In in = new In(socket);
-        Out out = new Out(socket);
-        System.err.println("Connected to " + host + " on port " + port);
+		}
+	}
 
-        // read in a line from stdin, send to server, and print back reply
-//        while (!stdin.hasNextLine()) {
-
-            // read line of client
-            String s =  "This is a test" ;
-
-            // send over socket to server
-            out.println("[" + screenName + "]: " + s);
-
-            // get reply from server and print it out
-            StdOut.println(in.readLine());
-//        }
-
-        // close IO streams, then socket
-        System.err.println("Closing connection to " + host);
-        out.close();
-        in.close();
-        socket.close();
-    }
 }
