@@ -1,6 +1,5 @@
 package rsb.io.net.io;
 
-import lombok.extern.slf4j.Slf4j;
 import rsb.io.net.FileSyncService;
 import rsb.io.net.FileSystemPersistingByteConsumer;
 
@@ -11,13 +10,12 @@ import java.util.function.Consumer;
 /**
  * Reads data in a synchronous and blocking fashion
  */
-@Slf4j
 public class Server implements FileSyncService {
 
 	public static void main(String[] args) throws Exception {
 		var port = 8888;
 		var server = new Server();
-		server.start(port, new FileSystemPersistingByteConsumer());
+		server.start(port, new FileSystemPersistingByteConsumer("io"));
 	}
 
 	@Override

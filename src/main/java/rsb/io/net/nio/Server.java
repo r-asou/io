@@ -23,7 +23,7 @@ public class Server implements FileSyncService {
 	public static void main(String[] args) throws Exception {
 		var port = 8888;
 		var server = new Server();
-		server.start(port, new FileSystemPersistingByteConsumer());
+		server.start(port, new FileSystemPersistingByteConsumer("nio"));
 	}
 
 	@Override
