@@ -8,7 +8,7 @@ import java.util.function.Consumer;
  * To test, run an implementation and try something like:
  *
  * <pre>{@code
- *   cat content | telnet 127.0.0.1 8888
+ *   nc 127.0.0.1 8888 < ~/code/reactive-spring-book/io/content
  * }</pre>
  */
 interface NetworkFileSync {
