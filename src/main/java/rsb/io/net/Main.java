@@ -27,7 +27,8 @@ public class Main {
 
 	public static void main(String[] args) {
 		var appProfile = Profiles.NIO;
-		System.setProperty("spring.profiles.active", "net," + appProfile.name().toLowerCase(Locale.ROOT));
+		var profileString = appProfile.name().toLowerCase(Locale.ROOT);
+		System.setProperty("spring.profiles.active", "net," + profileString);
 		SpringApplication.run(Main.class, args);
 	}
 

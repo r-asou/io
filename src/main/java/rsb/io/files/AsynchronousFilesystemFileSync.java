@@ -17,7 +17,6 @@ import java.util.function.Consumer;
  * This example is not non-blocking, but it is <em>asynchronous</em>. The client of the
  * API doesn't have to wait for the response, though there is threading behind the scenes.
  *
- * @author Josh Long
  */
 @Slf4j
 class AsynchronousFilesystemFileSync implements FilesystemFileSync {

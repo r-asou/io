@@ -13,7 +13,6 @@ import java.util.function.Consumer;
  * is possible to make this code asynchronous, but we would need to explicitly involve
  * threading somewhere.
  *
- * @author Josh Long
  */
 class SynchronousFilesystemFileSync implements FilesystemFileSync {
 
