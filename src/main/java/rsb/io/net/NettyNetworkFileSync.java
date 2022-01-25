@@ -9,6 +9,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.concurrent.AbstractEventExecutorGroup;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,6 +60,7 @@ class NettyNetworkFileSync implements NetworkFileSync {
 }
 
 @Slf4j
+@RequiredArgsConstructor
 @ChannelHandler.Sharable
 class NetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 
@@ -66,10 +68,6 @@ class NetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 
 	private final AtomicReference<ByteArrayOutputStream> byteArrayOutputStream = new AtomicReference<>(
 			new ByteArrayOutputStream());
-
-	NetworkFileSyncServerHandler(Consumer<byte[]> consumer) {
-		this.consumer = consumer;
-	}
 
 	@Override
 	@SneakyThrows
