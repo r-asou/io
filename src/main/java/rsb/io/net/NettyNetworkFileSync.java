@@ -89,8 +89,6 @@ class NetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 				if (bytes.length != 0) {
 					this.consumer.accept(bytes);
 				}
-				// we've read the bytes,
-				// time to reset for a new request
 				this.byteArrayOutputStream.set(new ByteArrayOutputStream());
 			} //
 			finally {
