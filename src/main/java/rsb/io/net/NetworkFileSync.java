@@ -13,6 +13,6 @@ import java.util.function.Consumer;
  */
 interface NetworkFileSync {
 
-	void start(int port, Consumer<byte[]> bytesHandler);
+	void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler);
 
 }

@@ -20,14 +20,9 @@ import java.util.function.Consumer;
 @Slf4j
 class NioNetworkFileSync implements NetworkFileSync {
 
-	public static void main(String[] args) throws Exception {
-		var nfs = new NioNetworkFileSync();
-		nfs.start(8888, new FileSystemPersistingByteConsumer("nio"));
-	}
-
 	@Override
 	@SneakyThrows
-	public void start(int port, Consumer<byte[]> bytesHandler) {
+	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
 
 		var serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
@@ -58,7 +53,7 @@ class NioNetworkFileSync implements NetworkFileSync {
 	}
 
 	@SneakyThrows
-	private static void saveFile(List<ByteBuffer> buffers, Consumer<byte[]> handler) {
+	private static void saveFile(List<ByteBuffer> buffers, Consumer<NetworkFileSyncBytes> handler) {
 
 		try (var baos = new ByteArrayOutputStream()) {
 			for (var bb : buffers) {
@@ -68,12 +63,13 @@ class NioNetworkFileSync implements NetworkFileSync {
 				baos.write(bytes, 0, bb.position());
 			}
 			var bytes = baos.toByteArray();
-			handler.accept(bytes);
+			handler.accept(new NetworkFileSyncBytes(NioNetworkFileSync.class.getSimpleName(), bytes));
 
 		}
 	}
 
-	private static void read(SelectionKey key, Selector selector, Consumer<byte[]> handler) throws Exception {
+	private static void read(SelectionKey key, Selector selector, Consumer<NetworkFileSyncBytes> handler)
+			throws Exception {
 		var ra = (ReadAttachment) key.attachment();
 		var len = 1000;
 		var bb = ByteBuffer.allocate(len);

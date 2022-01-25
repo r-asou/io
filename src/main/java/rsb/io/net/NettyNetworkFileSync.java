@@ -21,22 +21,20 @@ import java.util.function.Consumer;
 @Slf4j
 class NettyNetworkFileSync implements NetworkFileSync {
 
-	public static void main(String[] args) throws Exception {
-		var nfs = new NettyNetworkFileSync();
-		nfs.start(8888, new FileSystemPersistingByteConsumer("netty"));
-	}
-
 	@Override
 	@SneakyThrows
-	public void start(int port, Consumer<byte[]> bytesHandler) {
+	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
 
 		var bossEventLoopGroup = new NioEventLoopGroup(1);
 		var nioEventLoopGroup = new NioEventLoopGroup();
 		var serverHandler = new NetworkFileSyncServerHandler(bytesHandler);
 		try {
 			var serverBootstrap = new ServerBootstrap();
-			serverBootstrap.group(bossEventLoopGroup, nioEventLoopGroup).channel(NioServerSocketChannel.class)
-					.option(ChannelOption.SO_BACKLOG, 100).handler(new LoggingHandler(LogLevel.INFO))
+			serverBootstrap//
+					.group(bossEventLoopGroup, nioEventLoopGroup)//
+					.channel(NioServerSocketChannel.class)//
+					.option(ChannelOption.SO_BACKLOG, 100)//
+					.handler(new LoggingHandler(LogLevel.INFO))//
 					.childHandler(new ChannelInitializer<SocketChannel>() {
 
 						@Override
@@ -64,7 +62,7 @@ class NettyNetworkFileSync implements NetworkFileSync {
 @ChannelHandler.Sharable
 class NetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 
-	private final Consumer<byte[]> consumer;
+	private final Consumer<NetworkFileSyncBytes> consumer;
 
 	private final AtomicReference<ByteArrayOutputStream> byteArrayOutputStream = new AtomicReference<>(
 			new ByteArrayOutputStream());
@@ -87,7 +85,8 @@ class NetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 			try {
 				var bytes = baos.toByteArray();
 				if (bytes.length != 0) {
-					this.consumer.accept(bytes);
+					var syncBytes = new NetworkFileSyncBytes(NettyNetworkFileSync.class.getSimpleName(), bytes);
+					this.consumer.accept(syncBytes);
 				}
 				this.byteArrayOutputStream.set(new ByteArrayOutputStream());
 			} //

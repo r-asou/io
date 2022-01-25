@@ -11,14 +11,9 @@ import java.util.function.Consumer;
  */
 class IoNetworkFileSync implements NetworkFileSync {
 
-	public static void main(String[] args) {
-		var nfs = new IoNetworkFileSync();
-		nfs.start(8888, new FileSystemPersistingByteConsumer("io"));
-	}
-
 	@Override
 	@SneakyThrows
-	public void start(int port, Consumer<byte[]> consumer) {
+	public void start(int port, Consumer<NetworkFileSyncBytes> consumer) {
 		try (var ss = new ServerSocket(port)) {
 			while (true) {
 				try (var socket = ss.accept();
@@ -28,7 +23,7 @@ class IoNetworkFileSync implements NetworkFileSync {
 					var read = -1;
 					while ((read = in.read(bytes)) != -1)
 						out.write(bytes, 0, read);
-					consumer.accept(out.toByteArray());
+					consumer.accept(new NetworkFileSyncBytes(getClass().getSimpleName(), out.toByteArray()));
 				}
 
 			}
