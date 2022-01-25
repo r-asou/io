@@ -19,10 +19,13 @@ import java.util.function.Consumer;
 @SpringBootApplication
 public class Main {
 
+	enum Profiles {
+
+		NIO, NETTY, IO
+
+	}
+
 	public static void main(String[] args) {
-		// choose one of these!
-		enum
-		Profiles{NIO,NETTY,IO}
 		var appProfile = Profiles.NIO;
 		System.setProperty("spring.profiles.active", "net," + appProfile.name().toLowerCase(Locale.ROOT));
 		SpringApplication.run(Main.class, args);
