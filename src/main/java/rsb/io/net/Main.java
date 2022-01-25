@@ -1,6 +1,7 @@
 package rsb.io.net;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +12,7 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -18,6 +20,11 @@ import java.util.function.Consumer;
 public class Main {
 
 	public static void main(String[] args) {
+		// choose one of these!
+		enum
+		Profiles{NIO,NETTY,IO}
+		var appProfile = Profiles.NIO;
+		System.setProperty("spring.profiles.active", "net," + appProfile.name().toLowerCase(Locale.ROOT));
 		SpringApplication.run(Main.class, args);
 	}
 
@@ -39,9 +46,10 @@ public class Main {
 	}
 
 	@Bean
-	ApplicationRunner runner(NetworkFileSync nfs, Consumer<NetworkFileSyncBytes> consumer) {
-		log.info("using " + nfs.getClass().getName());
-		return args -> nfs.start(8888, consumer);
+	ApplicationRunner runner(@Value("${server.port}") int port, NetworkFileSync nfs,
+			Consumer<NetworkFileSyncBytes> consumer) {
+		log.info("running " + nfs.getClass().getName() + " on port " + port);
+		return args -> nfs.start(port, consumer);
 	}
 
 	@Bean
