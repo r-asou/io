@@ -16,6 +16,11 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class Main {
 
+	public static void main(String[] args) {
+		System.setProperty("spring.profiles.active", "files");
+		SpringApplication.run(Main.class, args);
+	}
+
 	@Bean
 	FilesystemFileSync synchronous() {
 		return new SynchronousFilesystemFileSync();
@@ -26,13 +31,8 @@ public class Main {
 		return new AsynchronousFilesystemFileSync();
 	}
 
-	public static void main(String[] args) {
-		System.setProperty("spring.profiles.active", "files");
-		SpringApplication.run(Main.class, args);
-	}
-
 	@Bean
-	ApplicationRunner runner(Map<String, FilesystemFileSync> fss) throws Exception {
+	ApplicationRunner runner(Map<String, FilesystemFileSync> fss) {
 		return args -> fss.forEach((beanName, fileSync) -> {
 			var file = this.createTempFile();
 			fileSync.start(file, bytes -> log.info(beanName + ':' + bytes.length + ':' + file.getAbsolutePath()));
@@ -51,9 +51,7 @@ public class Main {
 				.createTempFile("rsb-io-content-data", ".txt")//
 				.toFile();
 		file.deleteOnExit();
-		try (var in = Main.class.getResourceAsStream("/content"); //
-				var out = new FileOutputStream(file)//
-		) {
+		try (var in = Main.class.getResourceAsStream("/content"); var out = new FileOutputStream(file)) {
 			FileCopyUtils.copy(in, out);
 		}
 		return file;
