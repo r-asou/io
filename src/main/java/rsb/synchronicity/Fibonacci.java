@@ -17,6 +17,10 @@ class Fibonacci {
 		this.executor = executor;
 	}
 
+	public long[] calculate(int n) {
+		return calculateSeries(n);
+	}
+
 	public CompletableFuture<long[]> calculateWithCompletableFuture(int n) {
 		var cf = new CompletableFuture<long[]>();
 		this.executor.execute(() -> cf.complete(calculateSeries(n)));
