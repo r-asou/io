@@ -15,6 +15,7 @@ import static rsb.synchronicity.Utils.logBefore;
 @Component
 record SyncRunner(FibonacciService fibonacci) {
 
+	// <1>
 	@EventListener(ApplicationReadyEvent.class)
 	public void ready() {
 		execute("calculate", () -> fibonacci.calculate(60));

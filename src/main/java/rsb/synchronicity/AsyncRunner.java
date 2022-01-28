@@ -15,7 +15,9 @@ record AsyncRunner(FibonacciService fibonacci) {
 	@EventListener(ApplicationReadyEvent.class)
 	public void ready() {
 		var max = 60;
+		// <1>
 		executeCompletableFuture("calculateWithAsync", () -> fibonacci.calculateWithAsync(max));
+		// <2>
 		executeCompletableFuture("calculateWithCompletableFuture", () -> fibonacci.calculateWithCompletableFuture(max));
 	}
 
