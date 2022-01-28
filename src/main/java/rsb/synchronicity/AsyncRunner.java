@@ -10,19 +10,18 @@ import java.util.function.Supplier;
 import static rsb.synchronicity.Utils.*;
 
 @Component
-record AsyncRunner(Fibonacci fibonacci) {
+record AsyncRunner(FibonacciService fibonacci) {
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void ready() {
-        var max = 60;
-        executeCompletableFuture("calculateWithAsync", () -> fibonacci.calculateWithAsync(max));
-        executeCompletableFuture("calculateWithCompletableFuture", () -> fibonacci.calculateWithCompletableFuture(max));
-    }
+	@EventListener(ApplicationReadyEvent.class)
+	public void ready() {
+		var max = 60;
+		executeCompletableFuture("calculateWithAsync", () -> fibonacci.calculateWithAsync(max));
+		executeCompletableFuture("calculateWithCompletableFuture", () -> fibonacci.calculateWithCompletableFuture(max));
+	}
 
-    private void executeCompletableFuture(String func, Supplier<CompletableFuture<long[]>> completableFuture) {
-        logBefore(func);
-        completableFuture.get().whenComplete((r, t) -> handle(func, r, t));
-        logAfter(func);
-    }
-
+	private void executeCompletableFuture(String func, Supplier<CompletableFuture<long[]>> completableFuture) {
+		logBefore(func);
+		completableFuture.get().whenComplete((r, t) -> handle(func, r, t));
+		logAfter(func);
+	}
 }

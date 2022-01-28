@@ -11,21 +11,20 @@ import java.util.function.Supplier;
 import static rsb.synchronicity.Utils.logAfter;
 import static rsb.synchronicity.Utils.logBefore;
 
-@Component @Slf4j
-record SyncRunner (Fibonacci fibonacci) {
+@Slf4j
+@Component
+record SyncRunner(FibonacciService fibonacci) {
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void ready() throws Exception {
-        var max = 60;
-        execute("calculate", () -> fibonacci.calculate(max));
-    }
+	@EventListener(ApplicationReadyEvent.class)
+	public void ready() {
+		execute("calculate", () -> fibonacci.calculate(60));
+	}
 
-    private void execute(String func, Supplier<long[]> supplier) {
-        logBefore(func);
-        var results = supplier.get();
-        log.info(func + " : " + results.length + " : " + Arrays.toString(results));
-        logAfter(func);
-    }
-
+	private void execute(String func, Supplier<long[]> supplier) {
+		logBefore(func);
+		var results = supplier.get();
+		log.info(func + " : " + results.length + " : " + Arrays.toString(results));
+		logAfter(func);
+	}
 
 }

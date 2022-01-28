@@ -7,9 +7,11 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.concurrent.Executor;
 
-@EnableAsync
+@EnableAsync // <1>
 @SpringBootApplication
 public class Main implements AsyncConfigurer {
+
+// <2>
 
 	private final Executor executor;
 

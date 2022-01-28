@@ -11,30 +11,9 @@ import java.util.concurrent.Executor;
 @Component
 class Fibonacci {
 
-	private final Executor executor;
-
-	Fibonacci(Executor executor) {
-		this.executor = executor;
-	}
-
-	public long[] calculate(int n) {
-		return calculateSeries(n);
-	}
-
-	public CompletableFuture<long[]> calculateWithCompletableFuture(int n) {
-		var cf = new CompletableFuture<long[]>();
-		this.executor.execute(() -> cf.complete(calculateSeries(n)));
-		return cf;
-	}
-
-	@Async
-	public CompletableFuture<long[]> calculateWithAsync(int n) {
-		return CompletableFuture.completedFuture(calculateSeries(n));
-	}
-
 	@SneakyThrows
-	private static long[] calculateSeries(int num) {
-		Thread.sleep(1000);// artificial sleep!
+	public static long[] calculateSeries(int num) {
+		Thread.sleep(1000);// <1>
 		var i = 1;
 		var t1 = 0;
 		var t2 = 1;
