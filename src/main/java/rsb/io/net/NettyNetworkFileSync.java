@@ -21,6 +21,10 @@ import java.util.function.Consumer;
 @Slf4j
 class NettyNetworkFileSync implements NetworkFileSync {
 
+	private static void shutdown(List<NioEventLoopGroup> groups) {
+		groups.forEach(AbstractEventExecutorGroup::shutdownGracefully);
+	}
+
 	@Override
 	@SneakyThrows
 	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
@@ -49,10 +53,6 @@ class NettyNetworkFileSync implements NetworkFileSync {
 		finally {
 			shutdown(List.of(bossEventLoopGroup, nioEventLoopGroup));
 		}
-	}
-
-	private static void shutdown(List<NioEventLoopGroup> groups) {
-		groups.forEach(AbstractEventExecutorGroup::shutdownGracefully);
 	}
 
 }

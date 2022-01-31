@@ -19,12 +19,6 @@ import java.util.function.Consumer;
 @SpringBootApplication
 public class Main {
 
-	enum Profiles {
-
-		NIO, NETTY, IO
-
-	}
-
 	public static void main(String[] args) {
 		var appProfile = Profiles.NIO;
 		var profileString = appProfile.name().toLowerCase(Locale.ROOT);
@@ -72,6 +66,12 @@ public class Main {
 	@Profile("nio")
 	NetworkFileSync nio() {
 		return new NioNetworkFileSync();
+	}
+
+	enum Profiles {
+
+		NIO, NETTY, IO
+
 	}
 
 }

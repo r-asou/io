@@ -20,38 +20,6 @@ import java.util.function.Consumer;
 @Slf4j
 class NioNetworkFileSync implements NetworkFileSync {
 
-	@Override
-	@SneakyThrows
-	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
-
-		var serverSocketChannel = ServerSocketChannel.open();
-		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.bind(new InetSocketAddress(port));
-
-		var selector = Selector.open();
-		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-
-		while (!Thread.currentThread().isInterrupted()) {
-			selector.select();
-			var selectionKeys = selector.selectedKeys();
-			for (var it = selectionKeys.iterator(); it.hasNext();) {
-				var key = it.next();
-				it.remove();
-				if (key.isAcceptable()) {
-					var socket = serverSocketChannel.accept();
-					accept(key, selector, socket);
-				} //
-				else if (key.isReadable()) {
-					read(key, selector, bytesHandler);
-				}
-			}
-		}
-
-	}
-
-	record ReadAttachment(SelectionKey key, List<ByteBuffer> buffers) {
-	}
-
 	@SneakyThrows
 	private static void saveFile(List<ByteBuffer> buffers, Consumer<NetworkFileSyncBytes> handler) {
 
@@ -92,6 +60,38 @@ class NioNetworkFileSync implements NetworkFileSync {
 		var readAttachment = new ReadAttachment(key, new CopyOnWriteArrayList<>());
 		socketChannel.configureBlocking(false);
 		socketChannel.register(selector, SelectionKey.OP_READ, readAttachment);
+	}
+
+	@Override
+	@SneakyThrows
+	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
+
+		var serverSocketChannel = ServerSocketChannel.open();
+		serverSocketChannel.configureBlocking(false);
+		serverSocketChannel.bind(new InetSocketAddress(port));
+
+		var selector = Selector.open();
+		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+		while (!Thread.currentThread().isInterrupted()) {
+			selector.select();
+			var selectionKeys = selector.selectedKeys();
+			for (var it = selectionKeys.iterator(); it.hasNext();) {
+				var key = it.next();
+				it.remove();
+				if (key.isAcceptable()) {
+					var socket = serverSocketChannel.accept();
+					accept(key, selector, socket);
+				} //
+				else if (key.isReadable()) {
+					read(key, selector, bytesHandler);
+				}
+			}
+		}
+
+	}
+
+	record ReadAttachment(SelectionKey key, List<ByteBuffer> buffers) {
 	}
 
 }
