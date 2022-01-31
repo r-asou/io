@@ -12,10 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-/**
- * This example is not non-blocking, but it is <em>asynchronous</em>. The client of the
- * API doesn't have to wait for the response, though there is threading behind the scenes.
- */
 @Slf4j
 record AsynchronousFilesystemFileSync(ExecutorService executorService) implements FilesystemFileSync {
 
