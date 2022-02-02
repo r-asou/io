@@ -14,15 +14,17 @@ class IoNetworkFileSync implements NetworkFileSync {
 	@Override
 	@SneakyThrows
 	public void start(int port, Consumer<NetworkFileSyncBytes> consumer) {
-		try (var ss = new ServerSocket(port)) {
+		try (var ss = new ServerSocket(port)) { // <1>
 			while (true) {
-				try (var socket = ss.accept();
-						var in = socket.getInputStream();
-						var out = new ByteArrayOutputStream()) {
+				try (var socket = ss.accept(); // <2>
+						var in = socket.getInputStream(); // <3>
+						var out = new ByteArrayOutputStream()) { // <4>
 					var bytes = new byte[1024];
 					var read = -1;
 					while ((read = in.read(bytes)) != -1)
 						out.write(bytes, 0, read);
+
+					// <5>
 					consumer.accept(new NetworkFileSyncBytes(getClass().getSimpleName(), out.toByteArray()));
 				}
 

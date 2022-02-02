@@ -20,6 +20,45 @@ import java.util.function.Consumer;
 @Slf4j
 class NioNetworkFileSync implements NetworkFileSync {
 
+	@Override
+	@SneakyThrows
+	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
+
+		var serverSocketChannel = ServerSocketChannel.open();
+		serverSocketChannel.configureBlocking(false);
+		serverSocketChannel.bind(new InetSocketAddress(port));
+
+		var selector = Selector.open();// <1>
+		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);// <2>
+
+		while (!Thread.currentThread().isInterrupted()) { // <3>
+			selector.select();// <4>
+			var selectionKeys = selector.selectedKeys();// <5>
+			for (var it = selectionKeys.iterator(); it.hasNext();) {
+				var key = it.next();
+				it.remove();
+				if (key.isAcceptable()) { // <6>
+					var socket = serverSocketChannel.accept();
+					accept(key, selector, socket);
+				} //
+				else if (key.isReadable()) {// <7>
+					read(key, selector, bytesHandler);
+				}
+			}
+		}
+
+	}
+
+	record ReadAttachment(SelectionKey key, List<ByteBuffer> buffers) {
+	}
+
+	@SneakyThrows
+	private static void accept(SelectionKey key, Selector selector, SocketChannel socketChannel) {
+		var readAttachment = new ReadAttachment(key, new CopyOnWriteArrayList<>());// <8>
+		socketChannel.configureBlocking(false);// <7>
+		socketChannel.register(selector, SelectionKey.OP_READ, readAttachment);
+	}
+
 	@SneakyThrows
 	private static void saveFile(List<ByteBuffer> buffers, Consumer<NetworkFileSyncBytes> handler) {
 
@@ -53,45 +92,6 @@ class NioNetworkFileSync implements NetworkFileSync {
 			saveFile(ra.buffers(), handler);
 			channel.register(selector, SelectionKey.OP_WRITE);
 		}
-	}
-
-	@SneakyThrows
-	private static void accept(SelectionKey key, Selector selector, SocketChannel socketChannel) {
-		var readAttachment = new ReadAttachment(key, new CopyOnWriteArrayList<>());
-		socketChannel.configureBlocking(false);
-		socketChannel.register(selector, SelectionKey.OP_READ, readAttachment);
-	}
-
-	@Override
-	@SneakyThrows
-	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
-
-		var serverSocketChannel = ServerSocketChannel.open();
-		serverSocketChannel.configureBlocking(false);
-		serverSocketChannel.bind(new InetSocketAddress(port));
-
-		var selector = Selector.open();
-		serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
-
-		while (!Thread.currentThread().isInterrupted()) {
-			selector.select();
-			var selectionKeys = selector.selectedKeys();
-			for (var it = selectionKeys.iterator(); it.hasNext();) {
-				var key = it.next();
-				it.remove();
-				if (key.isAcceptable()) {
-					var socket = serverSocketChannel.accept();
-					accept(key, selector, socket);
-				} //
-				else if (key.isReadable()) {
-					read(key, selector, bytesHandler);
-				}
-			}
-		}
-
-	}
-
-	record ReadAttachment(SelectionKey key, List<ByteBuffer> buffers) {
 	}
 
 }
