@@ -39,28 +39,40 @@ class NioNetworkFileSync implements NetworkFileSync {
 				it.remove();
 				if (key.isAcceptable()) { // <6>
 					var socket = serverSocketChannel.accept();
-					accept(key, selector, socket);
+					var readAttachment = new ReadAttachment(new CopyOnWriteArrayList<>());// <8>
+					socket.configureBlocking(false);// <7>
+					socket.register(selector, SelectionKey.OP_READ, readAttachment);
 				} //
 				else if (key.isReadable()) {// <7>
-					read(key, selector, bytesHandler);
+					var ra = (ReadAttachment) key.attachment();// <8>
+					var len = 1000;
+					var bb = ByteBuffer.allocate(len);
+					var channel = (SocketChannel) key.channel();
+					var read = -1;
+
+					if ((read = channel.read(bb)) >= 0) {
+						ra.buffers().add(bb);
+						channel.register(selector, SelectionKey.OP_READ, ra);
+					}
+
+					// <9>
+					if (read == -1) {
+						notifyConsumer(ra.buffers(), bytesHandler);
+						channel.close();
+					}
 				}
 			}
 		}
 
 	}
 
-	record ReadAttachment(SelectionKey key, List<ByteBuffer> buffers) {
+	// <10>
+	record ReadAttachment(List<ByteBuffer> buffers) {
 	}
 
+	// <11>
 	@SneakyThrows
-	private static void accept(SelectionKey key, Selector selector, SocketChannel socketChannel) {
-		var readAttachment = new ReadAttachment(key, new CopyOnWriteArrayList<>());// <8>
-		socketChannel.configureBlocking(false);// <7>
-		socketChannel.register(selector, SelectionKey.OP_READ, readAttachment);
-	}
-
-	@SneakyThrows
-	private static void saveFile(List<ByteBuffer> buffers, Consumer<NetworkFileSyncBytes> handler) {
+	private static void notifyConsumer(List<ByteBuffer> buffers, Consumer<NetworkFileSyncBytes> handler) {
 
 		try (var baos = new ByteArrayOutputStream()) {
 			for (var bb : buffers) {
@@ -72,25 +84,6 @@ class NioNetworkFileSync implements NetworkFileSync {
 			var bytes = baos.toByteArray();
 			handler.accept(new NetworkFileSyncBytes(NioNetworkFileSync.class.getSimpleName(), bytes));
 
-		}
-	}
-
-	private static void read(SelectionKey key, Selector selector, Consumer<NetworkFileSyncBytes> handler)
-			throws Exception {
-		var ra = (ReadAttachment) key.attachment();
-		var len = 1000;
-		var bb = ByteBuffer.allocate(len);
-		var channel = (SocketChannel) key.channel();
-		var read = -1;
-
-		if ((read = channel.read(bb)) >= 0) {
-			ra.buffers().add(bb);
-			channel.register(selector, SelectionKey.OP_READ, new ReadAttachment(ra.key(), ra.buffers()));
-		}
-
-		if (read == -1) {
-			saveFile(ra.buffers(), handler);
-			channel.register(selector, SelectionKey.OP_WRITE);
 		}
 	}
 
