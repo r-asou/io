@@ -27,8 +27,9 @@ abstract class Timer {
 		var now = Instant.now();
 		var beginning = starts.get(func);
 		var duration = now.toEpochMilli() - beginning.toEpochMilli();
-		var durationString = duration < 1000 ? duration + " milliseconds"
-				: (duration / 1000) + "." + (duration % 1000) + " seconds";
+		var durationString = (duration < 1000) //
+				? (duration + " milliseconds") //
+				: ((duration / 1000) + "." + (duration % 1000) + " seconds");
 		log.info("result of {} is {}. Task ran for {}", func, result, durationString);
 	}
 
