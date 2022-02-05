@@ -10,7 +10,7 @@ import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
-class LongRunningAlgorithm {
+class AlgorithmClient {
 
 	private final Executor executor;
 
@@ -28,6 +28,7 @@ class LongRunningAlgorithm {
 		return cf;
 	}
 
+	// <3>
 	@Async
 	public CompletableFuture<BigInteger> calculateWithAsync(int n) {
 		return CompletableFuture.completedFuture(this.algorithm.compute(n));

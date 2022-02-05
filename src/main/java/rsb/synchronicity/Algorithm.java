@@ -9,14 +9,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 @Component
-@Slf4j
 class Algorithm {
 
 	@SneakyThrows
 	public BigInteger compute(int num) {
 		var result = new AtomicReference<BigInteger>();
-		var factorial = factorial(num);
-		iterate(factorial, result::set);
+		var factorial = factorial(num); // <1>
+		iterate(factorial, result::set);// <2>
 		return result.get();
 	}
 

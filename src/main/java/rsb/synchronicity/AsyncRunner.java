@@ -1,19 +1,16 @@
 package rsb.synchronicity;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 
 import java.math.BigInteger;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 @Slf4j
-record AsyncRunner(LongRunningAlgorithm algorithm, int max) {
+record AsyncRunner(AlgorithmClient algorithm, int max) implements Runnable {
 
-	@EventListener(ApplicationReadyEvent.class)
-	public void ready() {
-
+	@Override
+	public void run() {
 		// <1>
 		executeCompletableFuture("calculateWithAsync", () -> algorithm.calculateWithAsync(max));
 		// <2>
@@ -26,5 +23,4 @@ record AsyncRunner(LongRunningAlgorithm algorithm, int max) {
 		completableFuture.get().whenComplete((r, t) -> Timer.result(func, r));
 		Timer.after(func);
 	}
-
 }
