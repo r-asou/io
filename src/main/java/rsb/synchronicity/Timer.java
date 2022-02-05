@@ -16,7 +16,6 @@ abstract class Timer {
 		starts.put(func, now);
 		if (log.isDebugEnabled())
 			log.debug("before " + func + " : " + now.toString());
-
 	}
 
 	static void after(String func) {
