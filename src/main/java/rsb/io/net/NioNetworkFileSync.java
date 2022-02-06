@@ -2,6 +2,7 @@ package rsb.io.net;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
@@ -18,6 +19,7 @@ import java.util.function.Consumer;
  * Reads data in a non-blocking and asynchronous fashion
  */
 @Slf4j
+@Component
 class NioNetworkFileSync implements NetworkFileSync {
 
 	@Override

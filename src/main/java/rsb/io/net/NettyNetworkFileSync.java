@@ -10,10 +10,12 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
 @Slf4j
+@Component
 class NettyNetworkFileSync implements NetworkFileSync {
 
 	@Override

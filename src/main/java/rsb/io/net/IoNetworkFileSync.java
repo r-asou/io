@@ -1,6 +1,7 @@
 package rsb.io.net;
 
 import lombok.SneakyThrows;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.net.ServerSocket;
@@ -9,6 +10,7 @@ import java.util.function.Consumer;
 /**
  * Reads data in a synchronous and blocking fashion
  */
+@Component
 class IoNetworkFileSync implements NetworkFileSync {
 
 	@Override
