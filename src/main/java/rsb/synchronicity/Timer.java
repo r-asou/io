@@ -14,13 +14,11 @@ abstract class Timer {
 	static void before(String func) {
 		var now = Instant.now();
 		starts.put(func, now);
-		if (log.isDebugEnabled())
-			log.debug("before " + func + " : " + now.toString());
+		log.info("before " + func);
 	}
 
 	static void after(String func) {
-		if (log.isDebugEnabled())
-			log.debug("after " + func + " : " + Instant.now().toString());
+		log.info("after " + func);
 	}
 
 	static void result(String func, Object result) {

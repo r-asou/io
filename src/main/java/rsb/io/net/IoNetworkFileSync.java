@@ -13,7 +13,7 @@ class IoNetworkFileSync implements NetworkFileSync {
 
 	@Override
 	@SneakyThrows
-	public void start(int port, Consumer<NetworkFileSyncBytes> consumer) {
+	public void start(int port, Consumer<byte[]> consumer) {
 		try (var ss = new ServerSocket(port)) { // <1>
 			while (true) {
 				try (var socket = ss.accept(); // <2>
@@ -25,7 +25,7 @@ class IoNetworkFileSync implements NetworkFileSync {
 						out.write(bytes, 0, read);
 
 					// <5>
-					consumer.accept(new NetworkFileSyncBytes(getClass().getSimpleName(), out.toByteArray()));
+					consumer.accept(out.toByteArray());
 				}
 
 			}

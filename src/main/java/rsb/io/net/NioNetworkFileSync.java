@@ -22,7 +22,7 @@ class NioNetworkFileSync implements NetworkFileSync {
 
 	@Override
 	@SneakyThrows
-	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
+	public void start(int port, Consumer<byte[]> bytesHandler) {
 
 		var serverSocketChannel = ServerSocketChannel.open();
 		serverSocketChannel.configureBlocking(false);
@@ -72,7 +72,7 @@ class NioNetworkFileSync implements NetworkFileSync {
 
 	// <11>
 	@SneakyThrows
-	private static void notifyConsumer(List<ByteBuffer> buffers, Consumer<NetworkFileSyncBytes> handler) {
+	private static void notifyConsumer(List<ByteBuffer> buffers, Consumer<byte[]> handler) {
 
 		try (var baos = new ByteArrayOutputStream()) {
 			for (var bb : buffers) {
@@ -82,7 +82,7 @@ class NioNetworkFileSync implements NetworkFileSync {
 				baos.write(bytes, 0, bb.position());
 			}
 			var bytes = baos.toByteArray();
-			handler.accept(new NetworkFileSyncBytes(NioNetworkFileSync.class.getSimpleName(), bytes));
+			handler.accept(bytes);
 
 		}
 	}

@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 class NettyNetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 
 	// <1>
-	private final Consumer<NetworkFileSyncBytes> consumer;
+	private final Consumer<byte[]> consumer;
 
 	// <2>
 	private final AtomicReference<ByteArrayOutputStream> byteArrayOutputStream = new AtomicReference<>(
@@ -44,8 +44,7 @@ class NettyNetworkFileSyncServerHandler extends ChannelInboundHandlerAdapter {
 			try {
 				var bytes = baos.toByteArray();
 				if (bytes.length != 0) {
-					var syncBytes = new NetworkFileSyncBytes(NettyNetworkFileSync.class.getSimpleName(), bytes);
-					this.consumer.accept(syncBytes);
+					this.consumer.accept(bytes);
 				}
 				this.byteArrayOutputStream.set(new ByteArrayOutputStream());
 			} //

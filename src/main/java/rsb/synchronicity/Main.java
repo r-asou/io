@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 @SpringBootApplication
 public class Main implements AsyncConfigurer {
 
-// <2>
+	// <2>
 
 	private final Executor executor;
 
@@ -26,7 +26,7 @@ public class Main implements AsyncConfigurer {
 	@Bean
 	ApplicationRunner runner(AlgorithmClient algorithm) {
 		return args -> {
-			var max = 13;// <3>
+			var max = 12;// <3>
 			var runners = List.of(// <4>
 					new AsyncRunner(algorithm, max), new SyncRunner(algorithm, max));
 			runners.forEach(Runnable::run);

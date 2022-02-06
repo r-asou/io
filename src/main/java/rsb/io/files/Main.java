@@ -17,7 +17,7 @@ public class Main {
 		SpringApplication.run(Main.class, args);
 	}
 
-	@Bean
+	@Bean // <1>
 	ApplicationRunner runner(Map<String, FilesystemFileSync> map, ExecutorService executorService) {
 		return new FilesystemFileSyncApplicationRunner(map, executorService);
 	}

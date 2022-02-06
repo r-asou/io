@@ -18,7 +18,7 @@ class NettyNetworkFileSync implements NetworkFileSync {
 
 	@Override
 	@SneakyThrows
-	public void start(int port, Consumer<NetworkFileSyncBytes> bytesHandler) {
+	public void start(int port, Consumer<byte[]> bytesHandler) {
 
 		var nioEventLoopGroup = new NioEventLoopGroup();// <2>
 		var serverHandler = new NettyNetworkFileSyncServerHandler(bytesHandler);
