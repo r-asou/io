@@ -11,6 +11,7 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
@@ -27,8 +28,8 @@ class Asynchronous {
 	}
 
 	@SneakyThrows
-	static void read(File file, Consumer<byte[]> consumer) {
-		var executorService = Executors.newSingleThreadExecutor();
+	static void read(File file, Consumer<byte[]> consumer, ExecutorService executorService) {
+//  var executorService = Executors.newSingleThreadExecutor();
 		var fileChannel = AsynchronousFileChannel.open(file.toPath(), Collections.singleton(StandardOpenOption.READ),
 				executorService);
 		var completionHandler = new CompletionHandler<Integer, ReadAttachment>() {
@@ -75,7 +76,10 @@ class Asynchronous {
 	public static void main(String[] args) throws Exception {
 		var file = FileUtils.setup();
 		log.info("file read start");
-		read(file, bytes -> log.info("read " + bytes.length + " and the file is " + file.length()));
+		var executorService = Executors.newSingleThreadExecutor();
+		read(file, bytes -> log.info("read " + bytes.length + " and the file is " + file.length()), executorService);
+		Thread.sleep(5000L);
+		executorService.shutdown();
 	}
 
 }
